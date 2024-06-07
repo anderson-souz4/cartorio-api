@@ -33,27 +33,24 @@ public class CartorioServiceImplTest {
         MockitoAnnotations.openMocks(this);
         service = new CartorioServiceImpl(repository);
 
-        // Mock the findById method of the repository
         when(repository.findById(anyLong())).thenAnswer(invocation -> {
             Cartorio cartorio = new Cartorio();
             cartorio.setId(invocation.getArgument(0));
-            cartorio.setNome("Test");
+            cartorio.setNome("Cartório Central");
             return Optional.of(cartorio);
         });
 
-        // Mock the findByNome method of the repository
         when(repository.findByNome(anyString())).thenAnswer(invocation -> {
-            if ("Test".equals(invocation.getArgument(0))) {
+            if ("Cartório Central".equals(invocation.getArgument(0))) {
                 Cartorio cartorio = new Cartorio();
                 cartorio.setId(1L);
-                cartorio.setNome("Test");
+                cartorio.setNome("Cartório Central");
                 return Optional.of(cartorio);
             } else {
                 return Optional.empty();
             }
         });
 
-        // Mock the save method of the repository
         when(repository.save(any(Cartorio.class))).thenAnswer(invocation -> {
             Cartorio cartorio = invocation.getArgument(0);
             cartorio.setId(1L);
@@ -62,10 +59,10 @@ public class CartorioServiceImplTest {
     }
 
     @Test
-    public void listarTodas_returnsPageOfCartorioListDTO() {
+    public void listarTodasRetornaPageOfCartorioListDTO() {
         Cartorio cartorio = new Cartorio();
         cartorio.setId(1L);
-        cartorio.setNome("Test");
+        cartorio.setNome("Cartório Central");
         Page<Cartorio> page = new PageImpl<>(Arrays.asList(cartorio));
 
         when(repository.findAll(any(PageRequest.class))).thenReturn(page);
@@ -77,22 +74,22 @@ public class CartorioServiceImplTest {
     }
 
     @Test
-    public void buscarPorId_returnsCartorioDTO_whenCartorioExists() {
+    public void buscarPorIdRetornaCartorioDTOQuandoCartorioExiste() {
         Cartorio cartorio = new Cartorio();
         cartorio.setId(1L);
-        cartorio.setNome("Test");
+        cartorio.setNome("Cartório Central");
 
         when(repository.findById(1L)).thenReturn(Optional.of(cartorio));
 
         CartorioDTO result = service.buscarPorId(1L);
 
         assertEquals(1L, result.getId());
-        assertEquals("Test", result.getNome());
+        assertEquals("Cartório Central", result.getNome());
         verify(repository, times(1)).findById(1L);
     }
 
     @Test
-    public void buscarPorId_throwsEntidadeNaoEncontradaException_whenCartorioDoesNotExist() {
+    public void buscarPorIdLancaEntidadeNaoEncontradaExceptionQuandoCartorioNaoExiste() {
         when(repository.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(EntidadeNaoEncontradaException.class, () -> service.buscarPorId(1L));
@@ -102,7 +99,7 @@ public class CartorioServiceImplTest {
 
     @Test
     public void criarSalvaERetornaCartorioDTO() {
-        CartorioDTO dto = new CartorioDTO(null, "UniqueTestName", null, null, null);
+        CartorioDTO dto = new CartorioDTO(null, "CARTÓRIO", null, null, null);
 
         Cartorio cartorio = new Cartorio();
         cartorio.setId(1L);
@@ -118,29 +115,29 @@ public class CartorioServiceImplTest {
 
     @Test
     public void criarLanacAtributoJaExistenteExceptionQuandoNomeJaExiste() {
-        CartorioDTO dto = new CartorioDTO(1L, "Test", null, null, null);
+        CartorioDTO dto = new CartorioDTO(1L, "Cartório Central", null, null, null);
 
-        when(repository.findByNome("Test")).thenReturn(Optional.of(new Cartorio()));
+        when(repository.findByNome("Cartório Central")).thenReturn(Optional.of(new Cartorio()));
 
         assertThrows(AtributoJaExistenteException.class, () -> service.criar(dto));
 
-        verify(repository, times(1)).findByNome("Test");
+        verify(repository, times(1)).findByNome("Cartório Central");
     }
 
     @Test
     public void atualizarLancaAtributoJaExistenteExceptionQuandoNomeJaExisteParaIdDiferente() {
-        CartorioDTO dto = new CartorioDTO(2L, "Test", null, null, null);
+        CartorioDTO dto = new CartorioDTO(2L, "Cartório Central", null, null, null);
 
         Cartorio existingCartorio = new Cartorio();
         existingCartorio.setId(1L);
-        existingCartorio.setNome("Test");
+        existingCartorio.setNome("Cartório Central");
 
         Cartorio cartorioToUpdate = new Cartorio();
         cartorioToUpdate.setId(2L);
         cartorioToUpdate.setNome("Different");
 
         when(repository.findById(2L)).thenReturn(Optional.of(cartorioToUpdate));
-        when(repository.findByNome("Test")).thenReturn(Optional.of(existingCartorio));
+        when(repository.findByNome("Cartório Central")).thenReturn(Optional.of(existingCartorio));
 
         assertThrows(AtributoJaExistenteException.class, () -> service.atualizar(2L, dto));
     }
@@ -148,7 +145,7 @@ public class CartorioServiceImplTest {
 
     @Test
     public void atualizarLancaEntidadeNaoEncontradaExceptionQuandoCartorioDoesNotExist() {
-        CartorioDTO dto = new CartorioDTO(1L, "Test", null, null, null);
+        CartorioDTO dto = new CartorioDTO(1L, "Cartório Central", null, null, null);
 
         when(repository.findById(1L)).thenReturn(Optional.empty());
 
