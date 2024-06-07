@@ -5,7 +5,9 @@ import com.asouza.cartorioapi.dto.CartorioListDTO;
 import com.asouza.cartorioapi.models.Cartorio;
 import com.asouza.cartorioapi.repositories.CartorioRepository;
 import com.asouza.cartorioapi.services.CartorioService;
+import com.asouza.cartorioapi.services.exceptions.AtributoJaExistenteException;
 import com.asouza.cartorioapi.services.exceptions.EntidadeNaoEncontradaException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,9 @@ public class CartorioServiceImpl implements CartorioService {
 
     @Override
     public CartorioDTO criar(CartorioDTO dto) {
+        if (repository.findByNome(dto.getNome()).isPresent()) {
+            throw new AtributoJaExistenteException("Cartório com o nome " + dto.getNome() + " já existe.");
+        }
         Cartorio cartorio = new Cartorio();
         cartorio.setNome(dto.getNome());
         return new CartorioDTO(repository.save(cartorio).getId(), cartorio.getNome(), cartorio.getObservacao(), cartorio.getSituacao(), cartorio.getAtribuicoes());
@@ -42,6 +47,9 @@ public class CartorioServiceImpl implements CartorioService {
     @Override
     public CartorioDTO atualizar(Long id, CartorioDTO dto) {
         return repository.findById(id).map(cartorio -> {
+            if (cartorio.getNome() != null && !cartorio.getNome().equals(dto.getNome()) && repository.findByNome(dto.getNome()).isPresent()) {
+                throw new AtributoJaExistenteException("Cartório com o nome " + dto.getNome() + " já existe.");
+            }
             cartorio.setNome(dto.getNome());
             cartorio.setObservacao(dto.getObservacao());
             cartorio.setSituacao(dto.getSituacao());
@@ -52,7 +60,11 @@ public class CartorioServiceImpl implements CartorioService {
 
     @Override
     public boolean deletar(Long id) {
-        repository.deleteById(id);
+        try {
+            repository.deleteById(id);
+        } catch (EmptyResultDataAccessException e) {
+            throw new EntidadeNaoEncontradaException("Cartorio não encontrado, ID: ", id.toString());
+        }
         return false;
     }
 }

@@ -7,6 +7,8 @@ import com.asouza.cartorioapi.repositories.AtribuicaoCartorioRepository;
 import com.asouza.cartorioapi.services.AtribuicaoCartorioService;
 import com.asouza.cartorioapi.services.exceptions.AtributoJaExistenteException;
 import com.asouza.cartorioapi.services.exceptions.EntidadeNaoEncontradaException;
+import com.asouza.cartorioapi.services.exceptions.ViolacaoDaIntegridadeDosDados;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -67,7 +69,11 @@ public class AtribuicaoCartorioServiceImpl implements AtribuicaoCartorioService 
 
     @Override
     public boolean deletar(String id) {
-        repository.deleteById(id);
-        return false;
+        try {
+            repository.deleteById(id);
+            return true;
+        } catch (DataIntegrityViolationException ex) {
+            throw new ViolacaoDaIntegridadeDosDados("Registro utilizado em outro cadastro.");
+        }
     }
 }
